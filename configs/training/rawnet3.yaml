@@ -1,0 +1,13 @@
+data:
+  seed: 42
+
+checkpoint:
+  path: ""
+
+model:
+  name: "rawnet3"
+  parameters: {}
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.00005  # 5e-5
+

@@ -1,0 +1,14 @@
+data:
+  seed: 42
+
+checkpoint:
+  path: ""
+
+model:
+  name: "lcnn"
+  parameters:
+    input_channels: 1
+    frontend_algorithm: ["mfcc"]
+  optimizer:
+    lr: 0.0001
+    weight_decay: 0.0001

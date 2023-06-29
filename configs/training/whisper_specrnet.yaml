@@ -1,0 +1,15 @@
+data:
+  seed: 42
+
+checkpoint:
+  path: ""
+
+model:
+  name: "whisper_specrnet"
+  parameters:
+    freeze_encoder: True
+    input_channels: 1
+    frontend_algorithm: ["lfcc"]
+  optimizer:
+    lr: 0.0001
+    weight_decay: 0.0001
