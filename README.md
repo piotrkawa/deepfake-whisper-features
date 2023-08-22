@@ -1,7 +1,8 @@
 # Improved DeepFake Detection Using Whisper Features
 
 The following repository contains code for our paper called "Improved DeepFake Detection Using Whisper Features".
-Preprint is available [here](https://arxiv.org/abs/2306.01428).
+
+The paper is available [here](https://www.isca-speech.org/archive/interspeech_2023/kawa23b_interspeech.html).
 
 
 ## Before you start
@@ -129,10 +130,12 @@ Apart from the dependencies mentioned in Attack Agnostic Dataset repository we a
 
 If you use this code in your research please use the following citation:
 ```
-@article{kawa2023improved,
-  title={Improved DeepFake Detection Using Whisper Features},
-  author={Kawa, Piotr and Plata, Marcin and Czuba, Micha{\l} and Szyma{\'n}ski, Piotr and Syga, Piotr},
-  journal={arXiv preprint arXiv:2306.01428},
-  year={2023}
+@inproceedings{kawa23b_interspeech,
+  author={Piotr Kawa and Marcin Plata and Michał Czuba and Piotr Szymański and Piotr Syga},
+  title={{Improved DeepFake Detection Using Whisper Features}},
+  year=2023,
+  booktitle={Proc. INTERSPEECH 2023},
+  pages={4009--4013},
+  doi={10.21437/Interspeech.2023-1537}
 }
 ```
