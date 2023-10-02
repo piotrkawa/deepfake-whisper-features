@@ -51,7 +51,7 @@ To select appropriate front-end please specify it in the config file.
 
 ### Pretrained models
 
-Pretrained model of (Whisper+MFCC) MesoNet is available [here](https://drive.google.com/drive/folders/1YWMC64MW4HjGUX1fnBaMkMIGgAJde9Ch?usp=sharing).
+All models reported in paper are available [here](https://drive.google.com/drive/folders/1YWMC64MW4HjGUX1fnBaMkMIGgAJde9Ch?usp=sharing).
 
 ### Configs
 
