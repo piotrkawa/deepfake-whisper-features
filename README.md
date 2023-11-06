@@ -99,7 +99,7 @@ Arguments:
 
 e.g.:
 ```bash
-python train_and_test.py --asv_path ../datasets/deep_fakes/ASVspoof2021/DF --in_the_wild_path ../datasets/release_in_the_wild --config configs/training/whisper_specrnet.yaml --batch_size 8 --epochs 10 --train_amount 100000 --test_amount 25000
+python train_and_test.py --asv_path ../datasets/deep_fakes/ASVspoof2021/DF --in_the_wild_path ../datasets/release_in_the_wild --config configs/training/whisper_specrnet.yaml --batch_size 8 --epochs 10 --train_amount 100000 --valid_amount 25000
 ```
 
 
