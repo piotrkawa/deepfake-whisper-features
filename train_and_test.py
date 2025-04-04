@@ -24,12 +24,19 @@ def parse_args():
 
     ASVSPOOF_DATASET_PATH = "../datasets/ASVspoof2021/DF"
     IN_THE_WILD_DATASET_PATH = "../datasets/release_in_the_wild"
+    MLAAD_DATASET_PATH = "/Volumes/piotr-storage-1/work/mlaad/v5"
 
     parser.add_argument(
         "--asv_path",
         type=str,
         default=ASVSPOOF_DATASET_PATH,
         help="Path to ASVspoof2021 dataset directory",
+    )
+    parser.add_argument(
+        "--mlaad_path",
+        type=str,
+        default=MLAAD_DATASET_PATH,
+        help="Path to MLAAD dataset directory",
     )
     parser.add_argument(
         "--in_the_wild_path",
@@ -124,7 +131,8 @@ if __name__ == "__main__":
 
     evaluation_config_path, model_path = train_models.train_nn(
         datasets_paths=[
-            args.asv_path,
+            # args.asv_path,
+            args.mlaad_path,
         ],
         device=device,
         amount_to_use=(args.train_amount, args.valid_amount),

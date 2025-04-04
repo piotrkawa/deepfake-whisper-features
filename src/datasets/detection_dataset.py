@@ -8,6 +8,7 @@ from src.datasets.base_dataset import SimpleAudioFakeDataset
 from src.datasets.deepfake_asvspoof_dataset import DeepFakeASVSpoofDataset
 from src.datasets.fakeavceleb_dataset import FakeAVCelebDataset
 from src.datasets.wavefake_dataset import WaveFakeDataset
+from src.datasets.mlaad_dataset import MLADDataset
 from src.datasets.asvspoof_dataset import ASVSpoof2019DatasetOriginal
 
 
@@ -20,6 +21,7 @@ class DetectionDataset(SimpleAudioFakeDataset):
         asvspoof_path=None,
         wavefake_path=None,
         fakeavceleb_path=None,
+        mlaad_path=None,
         asvspoof2019_path=None,
         subset: str = "val",
         transform=None,
@@ -38,6 +40,7 @@ class DetectionDataset(SimpleAudioFakeDataset):
         datasets = self._init_datasets(
             asvspoof_path=asvspoof_path,
             wavefake_path=wavefake_path,
+            mlaad_path=mlaad_path,
             fakeavceleb_path=fakeavceleb_path,
             asvspoof2019_path=asvspoof2019_path,
             subset=subset,
@@ -62,6 +65,7 @@ class DetectionDataset(SimpleAudioFakeDataset):
         wavefake_path: Optional[str],
         fakeavceleb_path: Optional[str],
         asvspoof2019_path: Optional[str],
+        mlaad_path: Optional[str],
         subset: str,
     ) -> List[SimpleAudioFakeDataset]:
         datasets = []
@@ -83,6 +87,10 @@ class DetectionDataset(SimpleAudioFakeDataset):
                 asvspoof2019_path, fold_subset=subset
             )
             datasets.append(la_dataset)
+
+        if mlaad_path is not None:
+            mlaad_dataset = MLADDataset(mlaad_path, subset=subset)
+            datasets.append(mlaad_dataset)
 
         return datasets
 

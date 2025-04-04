@@ -29,13 +29,15 @@ def get_datasets(
     amount_to_use: Tuple[Optional[int], Optional[int]],
 ) -> Tuple[DetectionDataset, DetectionDataset]:
     data_train = DetectionDataset(
-        asvspoof_path=datasets_paths[0],
+        # asvspoof_path=datasets_paths[0],
+        mlaad_path=datasets_paths[0],
         subset="train",
         reduced_number=amount_to_use[0],
         oversample=True,
     )
     data_test = DetectionDataset(
-        asvspoof_path=datasets_paths[0],
+        # asvspoof_path=datasets_paths[0],
+        mlaad_path=datasets_paths[0],
         subset="test",
         reduced_number=amount_to_use[1],
         oversample=True,
