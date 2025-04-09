@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union, List
 
 import pandas as pd
 if __name__ == "__main__":
@@ -13,9 +12,9 @@ from src.datasets.base_dataset import SimpleAudioFakeDataset
 class MLADDataset(SimpleAudioFakeDataset):
     def __init__(
         self,
-        path: str,
+        path: str | Path,
         subset="train",
-        supported_languages: Union[List[str], None] = None,
+        supported_languages: list[str] | None = None,
         transform=None
     ):
         super().__init__(subset, transform)

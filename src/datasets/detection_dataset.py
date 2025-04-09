@@ -1,6 +1,6 @@
 import logging
+from pathlib import Path
 from typing import List, Optional
-
 
 import pandas as pd
 
@@ -18,11 +18,7 @@ LOGGER = logging.getLogger()
 class DetectionDataset(SimpleAudioFakeDataset):
     def __init__(
         self,
-        asvspoof_path=None,
-        wavefake_path=None,
-        fakeavceleb_path=None,
-        mlaad_path=None,
-        asvspoof2019_path=None,
+        dataset_map: dict[str, Path],
         subset: str = "val",
         transform=None,
         oversample: bool = True,
@@ -38,11 +34,7 @@ class DetectionDataset(SimpleAudioFakeDataset):
             return_meta=return_meta,
         )
         datasets = self._init_datasets(
-            asvspoof_path=asvspoof_path,
-            wavefake_path=wavefake_path,
-            mlaad_path=mlaad_path,
-            fakeavceleb_path=fakeavceleb_path,
-            asvspoof2019_path=asvspoof2019_path,
+            dataset_map=dataset_map,
             subset=subset,
         )
         self.samples = pd.concat([ds.samples for ds in datasets], ignore_index=True)
@@ -61,37 +53,35 @@ class DetectionDataset(SimpleAudioFakeDataset):
 
     def _init_datasets(
         self,
-        asvspoof_path: Optional[str],
-        wavefake_path: Optional[str],
-        fakeavceleb_path: Optional[str],
-        asvspoof2019_path: Optional[str],
-        mlaad_path: Optional[str],
+        dataset_map: dict[str, Path],
         subset: str,
     ) -> List[SimpleAudioFakeDataset]:
+
         datasets = []
 
-        if asvspoof_path is not None:
-            asvspoof_dataset = DeepFakeASVSpoofDataset(asvspoof_path, subset=subset)
-            datasets.append(asvspoof_dataset)
+        for name, path in dataset_map.items():
+            match name:
+                case "wavefake":
+                    ds = WaveFakeDataset(path, subset=subset)
+                    datasets.append(ds)
 
-        if wavefake_path is not None:
-            wavefake_dataset = WaveFakeDataset(wavefake_path, subset=subset)
-            datasets.append(wavefake_dataset)
+                case "fakeavceleb":
+                    ds = FakeAVCelebDataset(path, subset=subset)
+                    datasets.append(ds)
 
-        if fakeavceleb_path is not None:
-            fakeavceleb_dataset = FakeAVCelebDataset(fakeavceleb_path, subset=subset)
-            datasets.append(fakeavceleb_dataset)
+                case "asvspoof_2019":
+                    ds = ASVSpoof2019DatasetOriginal(path, fold_subset=subset)
+                    datasets.append(ds)
 
-        if asvspoof2019_path is not None:
-            la_dataset = ASVSpoof2019DatasetOriginal(
-                asvspoof2019_path, fold_subset=subset
-            )
-            datasets.append(la_dataset)
+                case "asvspoof_2021_df":
+                    ds = DeepFakeASVSpoofDataset(path, subset=subset)
+                    datasets.append(ds)
 
-        if mlaad_path is not None:
-            mlaad_dataset = MLADDataset(mlaad_path, subset=subset)
-            datasets.append(mlaad_dataset)
-
+                case "mlaad":
+                    ds = MLADDataset(path, subset=subset)
+                    datasets.append(ds)
+                case _:
+                    raise ValueError(f"Dataset {name} not supported!")
         return datasets
 
     def oversample_dataset(self):

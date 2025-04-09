@@ -1,0 +1,6 @@
+train:
+  mlaad: "/Volumes/piotr-storage-1/work/mlaad/v5"
+  asvspoof: "../datasets/ASVspoof2021/DF"
+
+test:
+  in_the_wild: "../datasets/release_in_the_wild" 

@@ -8,6 +8,7 @@ import yaml
 import train_models
 import evaluate_models
 from src.commons import set_seed
+from src import utils
 
 
 LOGGER = logging.getLogger()
@@ -22,34 +23,20 @@ LOGGER.addHandler(ch)
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    ASVSPOOF_DATASET_PATH = "../datasets/ASVspoof2021/DF"
-    IN_THE_WILD_DATASET_PATH = "../datasets/release_in_the_wild"
-    MLAAD_DATASET_PATH = "/Volumes/piotr-storage-1/work/mlaad/v5"
-
-    parser.add_argument(
-        "--asv_path",
-        type=str,
-        default=ASVSPOOF_DATASET_PATH,
-        help="Path to ASVspoof2021 dataset directory",
-    )
-    parser.add_argument(
-        "--mlaad_path",
-        type=str,
-        default=MLAAD_DATASET_PATH,
-        help="Path to MLAAD dataset directory",
-    )
-    parser.add_argument(
-        "--in_the_wild_path",
-        type=str,
-        default=IN_THE_WILD_DATASET_PATH,
-        help="Path to In The Wild dataset directory",
-    )
     default_model_config = "config.yaml"
     parser.add_argument(
         "--config",
         help="Model config file path (default: config.yaml)",
         type=str,
         default=default_model_config,
+    )
+
+    default_datasets_config = "datasets_config.yaml"
+    parser.add_argument(
+        "--datasets_config",
+        help="Datasets config file path (default: datasets_config.yaml)",
+        type=str,
+        default=default_datasets_config,
     )
 
     default_train_amount = None
@@ -112,10 +99,13 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    # TRAIN MODEL
 
+    # Load model configuration
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)
+
+    # Load datasets configuration
+    train_datasets, test_datasets = utils.load_datasets_config(args.datasets_config)
 
     seed = config["data"].get("seed", 42)
     # fix all seeds
@@ -129,11 +119,9 @@ if __name__ == "__main__":
     model_dir = Path(args.ckpt)
     model_dir.mkdir(parents=True, exist_ok=True)
 
+    # Use all training datasets
     evaluation_config_path, model_path = train_models.train_nn(
-        datasets_paths=[
-            # args.asv_path,
-            args.mlaad_path,
-        ],
+        datasets_paths=train_datasets,
         device=device,
         amount_to_use=(args.train_amount, args.valid_amount),
         batch_size=args.batch_size,
@@ -145,10 +133,11 @@ if __name__ == "__main__":
     with open(evaluation_config_path, "r") as f:
         config = yaml.safe_load(f)
 
+    # Use all test datasets
     evaluate_models.evaluate_nn(
         model_paths=config["checkpoint"].get("path", []),
         batch_size=args.batch_size,
-        datasets_paths=[args.in_the_wild_path],
+        datasets_paths=test_datasets,
         model_config=config["model"],
         amount_to_use=args.test_amount,
         device=device,

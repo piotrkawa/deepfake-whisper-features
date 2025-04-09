@@ -26,11 +26,10 @@ bash install.sh
 
 List of requirements:
 ```
-python=3.8
-pytorch==1.11.0
-torchaudio==0.11
-asteroid-filterbanks==0.4.0
-librosa==0.9.2
+pytorch
+torchaudio
+asteroid-filterbanks
+librosa
 openai whisper (git+https://github.com/openai/whisper.git@7858aa9c08d98f75575035ecd6481f462d66ca27)
 ```
 

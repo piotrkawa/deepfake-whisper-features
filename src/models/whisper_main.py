@@ -1,3 +1,5 @@
+from collections import OrderedDict
+from pathlib import Path
 # Based on https://github.com/openai/whisper/blob/main/whisper/model.py
 from dataclasses import dataclass
 from functools import lru_cache
@@ -26,6 +28,34 @@ N_SAMPLES = CHUNK_LENGTH * SAMPLE_RATE  # 480000: number of samples in a chunk
 N_FRAMES = exact_div(
     N_SAMPLES, HOP_LENGTH
 )  # 3000: number of frames in a mel spectrogram input
+
+WHISPER_WEIGHTS_DIR = Path("assets/whisper_weights")
+
+if not WHISPER_WEIGHTS_DIR.exists():
+    import whisper
+    from collections import OrderedDict
+
+    def extract_and_save_encoder(size):
+        model = whisper.load_model(size)
+        model_ckpt = OrderedDict()
+
+        model_ckpt['model_state_dict'] = OrderedDict()
+
+        for key, value in model.encoder.state_dict().items():
+            model_ckpt['model_state_dict'][f'encoder.{key}'] = value
+
+        model_ckpt['dims'] = model.dims
+        torch.save(model_ckpt, WHISPER_WEIGHTS_DIR / f"{size}.pt")
+
+    model_sizes = [
+        "tiny",
+        "small",
+        "base",
+        "large",
+        "turbo"
+    ]
+    for size in model_sizes:
+        extract_and_save_encoder(size)
 
 
 def pad_or_trim(
@@ -258,51 +288,6 @@ class AudioEncoder(nn.Module):
         return x
 
 
-class TextDecoder(nn.Module):
-    def __init__(
-        self, n_vocab: int, n_ctx: int, n_state: int, n_head: int, n_layer: int
-    ):
-        super().__init__()
-
-        self.token_embedding = nn.Embedding(n_vocab, n_state)
-        self.positional_embedding = nn.Parameter(torch.empty(n_ctx, n_state))
-
-        self.blocks: Iterable[ResidualAttentionBlock] = nn.ModuleList(
-            [
-                ResidualAttentionBlock(n_state, n_head, cross_attention=True)
-                for _ in range(n_layer)
-            ]
-        )
-        self.ln = LayerNorm(n_state)
-
-        mask = torch.empty(n_ctx, n_ctx).fill_(-np.inf).triu_(1)
-        self.register_buffer("mask", mask, persistent=False)
-
-    def forward(self, x: Tensor, xa: Tensor, kv_cache: Optional[dict] = None):
-        """
-        x : torch.LongTensor, shape = (batch_size, <= n_ctx)
-            the text tokens
-        xa : torch.Tensor, shape = (batch_size, n_mels, n_audio_ctx)
-            the encoded audio features to be attended on
-        """
-        offset = next(iter(kv_cache.values())).shape[1] if kv_cache else 0
-        x = (
-            self.token_embedding(x)
-            + self.positional_embedding[offset : offset + x.shape[-1]]
-        )
-        x = x.to(xa.dtype)
-
-        for block in self.blocks:
-            x = block(x, xa, mask=self.mask, kv_cache=kv_cache)
-
-        x = self.ln(x)
-        logits = (
-            x @ torch.transpose(self.token_embedding.weight.to(x.dtype), 0, 1)
-        ).float()
-
-        return logits
-
-
 class Whisper(nn.Module):
     def __init__(self, dims: ModelDimensions):
         super().__init__()
@@ -321,3 +306,87 @@ class Whisper(nn.Module):
     @property
     def device(self):
         return next(self.parameters()).device
+
+    @property
+    def output_dim(self):
+        return self.dims.n_audio_state
+
+
+def get_whisper_dims(model_size: str) -> ModelDimensions:
+    # TODO: proper dims
+    match model_size:
+        case "tiny":
+            return ModelDimensions(
+                n_mels=80,
+                n_audio_ctx=1500,
+                n_audio_state=384,
+                n_audio_head=6,
+                n_audio_layer=4, 
+                n_vocab=51865, 
+                n_text_ctx=448, 
+                n_text_state=384,
+                n_text_head=6, 
+                n_text_layer=4
+            )
+        case "small":
+            return ModelDimensions(
+                n_mels=80,
+                n_audio_ctx=1500,
+                n_audio_state=768,
+                n_audio_head=12,
+                n_audio_layer=12,
+                n_vocab=51865,
+                n_text_ctx=448,
+                n_text_state=768,
+                n_text_head=12,
+                n_text_layer=12
+            )
+        case "base":
+            return ModelDimensions(
+                n_mels=80,
+                n_audio_ctx=1500,
+                n_audio_state=512,
+                n_audio_head=8, 
+                n_audio_layer=6,
+                n_vocab=51865,
+                n_text_ctx=448,  
+                n_text_state=512,
+                n_text_head=8,
+                n_text_layer=6
+            )
+        case "large":
+            return ModelDimensions(
+                n_mels=128,
+                n_audio_ctx=1500,
+                n_audio_state=1280,
+                n_audio_head=20,
+                n_audio_layer=32,
+                n_vocab=51866,
+                n_text_ctx=448,
+                n_text_state=1280,
+                n_text_head=20,
+                n_text_layer=32
+            )
+        case "turbo":
+            return ModelDimensions(
+                n_mels=128,
+                n_audio_ctx=1500,
+                n_audio_state=1280,
+                n_audio_head=20,
+                n_audio_layer=32,
+                n_vocab=51866,
+                n_text_ctx=448,
+                n_text_state=1280,
+                n_text_head=20,
+                n_text_layer=4
+            )
+        case _:
+            raise ValueError(f"Unsupported model size: {model_size}")
+
+
+def get_whisper_model(model_size: str = "tiny"):
+    dims = get_whisper_dims(model_size)
+    model = Whisper(dims)
+    state_dict = torch.load(WHISPER_WEIGHTS_DIR / f"{model_size}.pt")
+    model.load_state_dict(state_dict['model_state_dict'])
+    return model

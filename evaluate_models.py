@@ -1,23 +1,20 @@
-import argparse
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
-import sys
+from typing import Any
 
 import torch
-import yaml
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 from torch.utils.data import DataLoader
 
-from src import metrics, commons
+from src import metrics
 from src.models import models
 from src.datasets.base_dataset import SimpleAudioFakeDataset
 from src.datasets.in_the_wild_dataset import InTheWildDataset
 
 
 def get_dataset(
-    datasets_paths: List[Union[Path, str]],
-    amount_to_use: Optional[int],
+    datasets_paths: list[Path | str],
+    amount_to_use: int | None,
 ) -> SimpleAudioFakeDataset:
     data_val = InTheWildDataset(
         subset="foo",
@@ -27,11 +24,11 @@ def get_dataset(
 
 
 def evaluate_nn(
-    model_paths: List[Path],
-    datasets_paths: List[Union[Path, str]],
-    model_config: Dict,
+    model_paths: list[Path],
+    datasets_paths: list[Path | str],
+    model_config: dict[str, Any],
     device: str,
-    amount_to_use: Optional[int] = None,
+    amount_to_use: int | None = None,
     batch_size: int = 8,
 ):
     logging.info("Loading data...")
@@ -119,70 +116,70 @@ def evaluate_nn(
     )
 
 
-def main(args):
-    LOGGER = logging.getLogger()
-    LOGGER.setLevel(logging.INFO)
+# def main(args):
+#     LOGGER = logging.getLogger()
+#     LOGGER.setLevel(logging.INFO)
 
-    ch = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    ch.setFormatter(formatter)
-    LOGGER.addHandler(ch)
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+#     ch = logging.StreamHandler()
+#     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+#     ch.setFormatter(formatter)
+#     LOGGER.addHandler(ch)
+#     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    if not args.cpu and torch.cuda.is_available():
-        device = "cuda"
-    else:
-        device = "cpu"
+#     if not args.cpu and torch.cuda.is_available():
+#         device = "cuda"
+#     else:
+#         device = "cpu"
 
-    with open(args.config, "r") as f:
-        config = yaml.safe_load(f)
+#     with open(args.config, "r") as f:
+#         config = yaml.safe_load(f)
 
-    seed = config["data"].get("seed", 42)
-    # fix all seeds - this should not actually change anything
-    commons.set_seed(seed)
+#     seed = config["data"].get("seed", 42)
+#     # fix all seeds - this should not actually change anything
+#     commons.set_seed(seed)
 
-    evaluate_nn(
-        model_paths=config["checkpoint"].get("path", []),
-        datasets_paths=[
-            args.in_the_wild_path,
-        ],
-        model_config=config["model"],
-        amount_to_use=args.amount,
-        device=device,
-    )
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-
-    # If assigned as None, then it won't be taken into account
-    IN_THE_WILD_DATASET_PATH = "../datasets/release_in_the_wild"
-
-    parser.add_argument(
-        "--in_the_wild_path", type=str, default=IN_THE_WILD_DATASET_PATH
-    )
-
-    default_model_config = "config.yaml"
-    parser.add_argument(
-        "--config",
-        help="Model config file path (default: config.yaml)",
-        type=str,
-        default=default_model_config,
-    )
-
-    default_amount = None
-    parser.add_argument(
-        "--amount",
-        "-a",
-        help=f"Amount of files to load from each directory (default: {default_amount} - use all).",
-        type=int,
-        default=default_amount,
-    )
-
-    parser.add_argument("--cpu", "-c", help="Force using cpu", action="store_true")
-
-    return parser.parse_args()
+#     evaluate_nn(
+#         model_paths=config["checkpoint"].get("path", []),
+#         datasets_paths=[
+#             args.in_the_wild_path,
+#         ],
+#         model_config=config["model"],
+#         amount_to_use=args.amount,
+#         device=device,
+#     )
 
 
-if __name__ == "__main__":
-    main(parse_args())
+# def parse_args():
+#     parser = argparse.ArgumentParser()
+
+#     # If assigned as None, then it won't be taken into account
+#     IN_THE_WILD_DATASET_PATH = "../datasets/release_in_the_wild"
+
+#     parser.add_argument(
+#         "--in_the_wild_path", type=str, default=IN_THE_WILD_DATASET_PATH
+#     )
+
+#     default_model_config = "config.yaml"
+#     parser.add_argument(
+#         "--config",
+#         help="Model config file path (default: config.yaml)",
+#         type=str,
+#         default=default_model_config,
+#     )
+
+#     default_amount = None
+#     parser.add_argument(
+#         "--amount",
+#         "-a",
+#         help=f"Amount of files to load from each directory (default: {default_amount} - use all).",
+#         type=int,
+#         default=default_amount,
+#     )
+
+#     parser.add_argument("--cpu", "-c", help="Force using cpu", action="store_true")
+
+#     return parser.parse_args()
+
+
+# if __name__ == "__main__":
+#     main(parse_args())
