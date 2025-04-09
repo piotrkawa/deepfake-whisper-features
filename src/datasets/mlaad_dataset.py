@@ -9,7 +9,7 @@ from src.datasets.base_dataset import SimpleAudioFakeDataset
 
 
 
-class MLADDataset(SimpleAudioFakeDataset):
+class MLAADataset(SimpleAudioFakeDataset):
     def __init__(
         self,
         path: str | Path,

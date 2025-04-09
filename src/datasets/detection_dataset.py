@@ -8,7 +8,7 @@ from src.datasets.base_dataset import SimpleAudioFakeDataset
 from src.datasets.deepfake_asvspoof_dataset import DeepFakeASVSpoofDataset
 from src.datasets.fakeavceleb_dataset import FakeAVCelebDataset
 from src.datasets.wavefake_dataset import WaveFakeDataset
-from src.datasets.mlaad_dataset import MLADDataset
+from src.datasets.mlaad_dataset import MLAADataset
 from src.datasets.asvspoof_dataset import ASVSpoof2019DatasetOriginal
 
 
@@ -78,7 +78,7 @@ class DetectionDataset(SimpleAudioFakeDataset):
                     datasets.append(ds)
 
                 case "mlaad":
-                    ds = MLADDataset(path, subset=subset)
+                    ds = MLAADataset(path, subset=subset)
                     datasets.append(ds)
                 case _:
                     raise ValueError(f"Dataset {name} not supported!")
